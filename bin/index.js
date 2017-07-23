@@ -1,6 +1,6 @@
-var opt = require('minimist')(process.argv.slice(2));
-
-var mqtt = require('mqtt')
+const opt = require('minimist')(process.argv.slice(2));
+const fs = require('fs');
+const mqtt = require('mqtt')
 
 opt.broker = opt.broker || "mqtt://locahost:1883"
 opt.clients = opt.clients || 10 ;
@@ -10,6 +10,9 @@ opt.qos = opt.qos || 0 ;
 opt.size = opt.size || 1024 ;
 opt.sleep = opt.sleep || 0
 opt.message = new Array(opt.size+ 1).join('h');
+opt.cafile = opt.cafile &&  fs.readFileSync(opt.cafile)
+opt.key = opt.key &&  fs.readFileSync(opt.key)
+opt.cert = opt.cert &&  fs.readFileSync(opt.cert)
 
 // help functions
 const now = ()=>Date.now()
