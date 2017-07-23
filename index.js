@@ -1,7 +1,6 @@
 const opt = require('minimist')(process.argv.slice(2));
 const fs = require('fs');
 const mqtt = require('mqtt')
-
 opt.broker = opt.broker || "mqtt://locahost:1883"
 opt.clients = opt.clients || 10 ;
 opt.count = opt.count || 100 ;
@@ -25,7 +24,7 @@ let failedClients = 0
 const connectToClients = ()=> new Promise((resolve, reject) =>{
   const c = mqtt.connect(opt.broker,opt)
   c.on('connect', ()=>resolve(c))
-  c.on('error',  ()=>reject())
+  c.on('error',  (err)=>reject(err))
 })
 
 const publish = (c, counter = 0 , success = 0) =>{
@@ -41,6 +40,7 @@ const publish = (c, counter = 0 , success = 0) =>{
     return
   } else {
     c.publish(opt.topic, opt.message,{qos:opt.qos},(err)=>{
+      opt.d && err && console.log(err);
       !err && success++
       counter ++;
       publish(c,counter,success)
@@ -52,7 +52,7 @@ let results = []
 const pushResult = (result)=>{
   results.push(result)
   if(results.length == opt.clients){
-    console.log("bandwidth:",results.reduce((a,b)=>(a+b))/results.length)
+    console.log("Bandwidth (messages/second):",results.reduce((a,b)=>(a+b))/results.length)
     clients.forEach((c)=>c.end(true))
   }
 
@@ -66,12 +66,13 @@ const start = async ()=> {
     try {
       clients.push(await connectToClients())
     } catch (er) {
+      opt.d && console.log(err);
       failedClients ++
     }
   }
 
   if (!(failedClients <opt.clients)) {
-    console.log("Please check the broker address could not connect to clients");
+    console.log("Please check the broker address, Could not connect to clients");
     process.exit(1);
   }
   console.log(`Conencted to ${opt.clients} sucessfully`);
