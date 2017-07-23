@@ -27,9 +27,9 @@ const connectToClients = ()=> new Promise((resolve, reject) =>{
   c.on('error',  (err)=>reject(err))
 })
 
-const publish = (c, counter = 0 , success = 0) =>{
+const publish = async (c, counter = 0 , success = 0) =>{
   if(opt.sleep > 0){
-    sleep()
+    await sleep()
   }
   if (counter == 0 ) {
     c.startTime =now()
