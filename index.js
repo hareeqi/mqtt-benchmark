@@ -10,7 +10,7 @@ opt.qos = opt.qos || 0 ;
 opt.size = opt.size || 1024 ;
 opt.sleep = opt.sleep || 0
 opt.message = new Array(opt.size+ 1).join('h');
-opt.cafile = opt.cafile &&  fs.readFileSync(opt.cafile)
+opt.ca = opt.ca &&  fs.readFileSync(opt.ca)
 opt.key = opt.key &&  fs.readFileSync(opt.key)
 opt.cert = opt.cert &&  fs.readFileSync(opt.cert)
 
