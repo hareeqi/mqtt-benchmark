@@ -1,0 +1,23 @@
+{
+  "name": "mqtt-bench",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hareeqi/mqtt-bench.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hareeqi/mqtt-bench/issues"
+  },
+  "homepage": "https://github.com/hareeqi/mqtt-bench#readme",
+  "dependencies": {
+    "minimist": "^1.2.0",
+    "mqtt": "^2.9.2"
+  }
+}
