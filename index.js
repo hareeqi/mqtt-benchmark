@@ -22,6 +22,7 @@ const sleep = (t=opt.sleep)=> new Promise(resolve => setTimeout(resolve, t))
 
 
 let clients = []
+let results = []
 let failedClients = 0
 
 const connectToClients = (broker=opt.broker)=> new Promise((resolve, reject) =>{
@@ -30,26 +31,66 @@ const connectToClients = (broker=opt.broker)=> new Promise((resolve, reject) =>{
   c.on('error',  (err)=>reject(err))
 })
 
-const publish = async (c, counter = 0 , success = 0) =>{
+
+/////////////////// Publishing Code
+/////////////////// Publishing Code
+/////////////////// Publishing Code
+/////////////////// Publishing Code
+const publish = async (c ) =>{
   if(opt.sleep > 0){
     await sleep()
   }
-  if (counter == 0 ) {
-    c.startTime =now()
+  if (!c.counter) {
+    c.counter = 0
+    c.results =[]
+    c.push = (state)=>{
+      c.results.push(state);
+      if (c.results.length==opt.count) {
+        const success = c.results.reduce((a,b)=>(a + (b && 1)),0)
+        const failure = c.results.reduce((a,b)=>(a + (!b && 1)),0);
+        const duraion = (now() - c.startTime) / 1000
+        const throughput = success/duraion
+        opt.submode?subresult(c):pubresult({success,failure,duraion,throughput})
+
+      }
+    }
+    c.startTime = now()
+    opt.d && console.log(`Client sequance ${c.order} started publishing`);
   }
-  if (counter >= opt.count ){
-    //bandwidth
-    opt.submode?subresult(c):pubresult(success / (now() - c.startTime) * 1000)
+
+  // recursive publishing
+  if (c.counter == opt.count ){
+    opt.d && console.log(`Client sequance ${c.order} finished publishing`);
     return
   } else {
+    c.counter ++;
+    opt.d && console.log(`Client sequance ${c.order} publishing message number ${c.counter}`);
     c.publish(opt.topic, opt.message,{qos:opt.qos},(err)=>{
       opt.d && err && console.log(err);
-      !err && success++
-      counter ++;
-      publish(c,counter,success)
+      err?c.push(false):c.push(true)
+
     })
+    publish(c)
   }
 }
+
+const pubresult = (result)=>{
+  opt.d && console.log(result);
+  results.push(result)
+  if(results.length == opt.clients){
+    console.log(`Avrage result for each client of the ${opt.clients} `);
+    console.log("Success in sending ",results.reduce((a,b)=>(a+b.success),0)/results.length);
+    console.log("failure in sending ",results.reduce((a,b)=>(a+b.failure),0)/results.length);
+    console.log("duraion in sending ",results.reduce((a,b)=>(a+b.duraion),0)/results.length);
+    console.log("Throughput (messages/second):",results.reduce((a,b)=>(a+b.throughput),0)/results.length);
+    clients.forEach((c)=>c.end(true))
+  }
+}
+
+/////////////////// Subscribe Code
+/////////////////// Subscribe Code
+/////////////////// Subscribe Code
+/////////////////// Subscribe Code
 let subs = []
 const markSubbed = async(t)=>{
   subs.push(t)
@@ -71,6 +112,7 @@ const subscribe = (c) =>{
     c.recivedCount = 0
     c.subscribe(opt.topic,{qos:opt.qos},async(err)=>{
         if (err) {
+          // if could not sub, tryin again until you can
           await sleep(5)
           subscribe(c)
         } else {
@@ -80,14 +122,8 @@ const subscribe = (c) =>{
     c.on('message', (topic, message)=>(c.recivedCount++))
 }
 
-let results = []
-const pubresult = (result)=>{
-  results.push(result)
-  if(results.length == opt.clients){
-    console.log("Bandwidth (messages/second):",results.reduce((a,b)=>(a+b))/results.length)
-    clients.forEach((c)=>c.end(true))
-  }
-}
+
+
 
 const subresult = async (c)=>{
   await sleep(opt.subtimeout*1000)
@@ -100,6 +136,10 @@ const subresult = async (c)=>{
   clients.forEach((c)=>c.end(true))
 }
 
+/////////////////// start test  Code
+/////////////////// start test  Code
+/////////////////// start test  Code
+/////////////////// start test  Code
 const start = async ()=> {
 
   // trying to connect to all clients before starting the test
@@ -120,6 +160,7 @@ const start = async ()=> {
   console.log(`Conencted to ${opt.clients} sucessfully`);
   const action  = opt.submode?subscribe:publish
   for (let i = 0 ; i <clients.length ; i++) {
+    clients[i].order =[i]
     action(clients[i])
   }
 
