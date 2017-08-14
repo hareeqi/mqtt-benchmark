@@ -71,11 +71,12 @@ Conencted to 10 sucessfully
 
 	Advanced Options:
 
+	-d        	Show all debug messgages
+
 	All options of mqttjs connections can passed as a flag
 	https://github.com/mqttjs/MQTT.js#connect
 
 	All options of nodejs net or tls socket can passed as a flag
 	https://nodejs.org/api/net.html
-
 
 ```

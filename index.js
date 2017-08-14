@@ -142,7 +142,8 @@ const start = async ()=> {
   while (clients.length < opt.clients && failedClients <opt.clients) {
 
     try {
-      clients.push(await connectToClients(opt.submode?opt.subbroker:opt.broker))
+      const index = clients.push(await connectToClients(opt.submode?opt.subbroker:opt.broker))
+      print.debug(`Client ${index} has successfully connected`);
     } catch (err) {
       print.debug(err);
       failedClients ++
@@ -156,7 +157,7 @@ const start = async ()=> {
   console.log(`Conencted to ${opt.clients} sucessfully`);
   const action  = opt.submode?subscribe:publish
   for (let i = 0 ; i <clients.length ; i++) {
-    clients[i].order =[i]
+    clients[i].order =i
     action(clients[i])
   }
 

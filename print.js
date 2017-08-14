@@ -49,7 +49,10 @@ popt('subbroker', "Broker to be used for subscribing clients (default= --broker)
 popt('subqos', "Subscribing clients QoS (default=0)")
 popt('subtimeout', "Seconds subscribers will wait after publishing is finished (defaults=2) ")
 
+
+
 helptxt += `\n\n\n\tAdvanced Options:\n\n`
+helptxt += `\t-d        \tShow all debug messgages \n\n`
 helptxt += `\tAll options of mqttjs connections can passed as a flag \n\thttps://github.com/mqttjs/MQTT.js#connect\n\n`
 helptxt += `\tAll options of nodejs net or tls socket can passed as a flag\n\thttps://nodejs.org/api/net.html\n\n`
 
