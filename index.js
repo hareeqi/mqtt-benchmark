@@ -1,14 +1,15 @@
 const opt = require('minimist')(process.argv.slice(2));
 const fs = require('fs');
+const print = require("./print.js")
 const mqtt = require('mqtt')
-opt.broker = opt.broker
 opt.subbroker = opt.subbroker || opt.broker
 opt.submode = opt.submode || false
-opt.subtimeout = opt.subtimeout || 5
+opt.subqos = opt.subqos || 0
+opt.subtimeout = opt.subtimeout || 2
 opt.clients = opt.clients || 10 ;
 opt.count = opt.count || 100 ;
 opt.topic = opt.topic || "/mqttjs-bench" ;
-opt.qos = opt.qos || 0 ;
+opt.qos = opt.qos || opt.submode?0:1 ;
 opt.size = opt.size || 1024 ;
 opt.sleep = opt.sleep || 0
 opt.message = new Array(opt.size+ 1).join('h');
@@ -20,13 +21,13 @@ opt.cert = opt.cert &&  fs.readFileSync(opt.cert)
 const now = ()=>Date.now()
 const sleep = (t=opt.sleep)=> new Promise(resolve => setTimeout(resolve, t))
 
-
 let clients = []
 let results = []
+let avgConTime = 0;
 let failedClients = 0
 
-const connectToClients = (broker=opt.broker)=> new Promise((resolve, reject) =>{
-  const c = mqtt.connect(opt.broker,opt)
+const connectToClients = (broker)=> new Promise((resolve, reject) =>{
+  const c = mqtt.connect(broker,opt)
   c.on('connect', ()=>resolve(c))
   c.on('error',  (err)=>reject(err))
 })
@@ -55,18 +56,18 @@ const publish = async (c ) =>{
       }
     }
     c.startTime = now()
-    opt.d && console.log(`Client sequance ${c.order} started publishing`);
+    print.debug(`Client sequence ${c.order} started publishing`);
   }
 
   // recursive publishing
   if (c.counter == opt.count ){
-    opt.d && console.log(`Client sequance ${c.order} finished publishing`);
+    print.debug(`Client sequence ${c.order} finished publishing`);
     return
   } else {
     c.counter ++;
-    opt.d && console.log(`Client sequance ${c.order} publishing message number ${c.counter}`);
+    print.debug(`Client sequence ${c.order} publishing message number ${c.counter}`);
     c.publish(opt.topic, opt.message,{qos:opt.qos},(err)=>{
-      opt.d && err && console.log(err);
+      err && print.debug(err);
       err?c.push(false):c.push(true)
 
     })
@@ -75,14 +76,10 @@ const publish = async (c ) =>{
 }
 
 const pubresult = (result)=>{
-  opt.d && console.log(result);
+  print.debug(result);
   results.push(result)
   if(results.length == opt.clients){
-    console.log(`Avrage result for each client of the ${opt.clients} `);
-    console.log("Success in sending ",results.reduce((a,b)=>(a+b.success),0)/results.length);
-    console.log("failure in sending ",results.reduce((a,b)=>(a+b.failure),0)/results.length);
-    console.log("duraion in sending ",results.reduce((a,b)=>(a+b.duraion),0)/results.length);
-    console.log("Throughput (messages/second):",results.reduce((a,b)=>(a+b.throughput),0)/results.length);
+    print.publish(opt,results,avgConTime)
     clients.forEach((c)=>c.end(true))
   }
 }
@@ -99,9 +96,9 @@ const markSubbed = async(t)=>{
     let c = false
     while (!c) {
       try{
-        c = await connectToClients(opt.subbroker)
+        c = await connectToClients(opt.broker)
       } catch (err) {
-        opt.d && console.log("subscription mode: Couldn't connect to puplish");
+        print.debug("subscription mode: Couldn't connect to puplish");
       }
     }
     publish(c)
@@ -110,7 +107,7 @@ const markSubbed = async(t)=>{
 
 const subscribe = (c) =>{
     c.recivedCount = 0
-    c.subscribe(opt.topic,{qos:opt.qos},async(err)=>{
+    c.subscribe(opt.topic,{qos:opt.subqos},async(err)=>{
         if (err) {
           // if could not sub, tryin again until you can
           await sleep(5)
@@ -123,15 +120,12 @@ const subscribe = (c) =>{
 }
 
 
-
-
 const subresult = async (c)=>{
   await sleep(opt.subtimeout*1000)
   const duraion = now()-c.startTime
 
   const totalAvgMsgRecived = clients.reduce((a,b)=>(a+b.recivedCount),0)/clients.length
-  console.log("total avg recived:",totalAvgMsgRecived);
-  console.log("Bandwidth (messages/second):",totalAvgMsgRecived/duraion*1000)
+  print.subscribe(opt,totalAvgMsgRecived,duraion,avgConTime)
   c.end(true)
   clients.forEach((c)=>c.end(true))
 }
@@ -143,16 +137,18 @@ const subresult = async (c)=>{
 const start = async ()=> {
 
   // trying to connect to all clients before starting the test
-  console.log(`trying to conenct to ${opt.clients} clients ...`);
+  console.log(`\nTrying to conenct to ${opt.clients} clients ...`);
+  const conStartTime = now()
   while (clients.length < opt.clients && failedClients <opt.clients) {
+
     try {
-      clients.push(await connectToClients())
-    } catch (er) {
-      opt.d && console.log(err);
+      clients.push(await connectToClients(opt.submode?opt.subbroker:opt.broker))
+    } catch (err) {
+      print.debug(err);
       failedClients ++
     }
   }
-
+  avgConTime = (now() - conStartTime)/1000.0/opt.clients
   if (!(failedClients <opt.clients)) {
     console.log("Please check the broker address, Could not connect to clients");
     process.exit(1);
@@ -166,4 +162,11 @@ const start = async ()=> {
 
 }
 
-start()
+module.exports = ()=>{
+  if(opt.help || !opt.broker) {
+    print.help()
+  } else {
+    start()
+
+  }
+}
