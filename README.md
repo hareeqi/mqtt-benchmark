@@ -48,8 +48,8 @@ Conencted to 10 sucessfully
 	--broker    	[Required] mqtt://example.com:1883 or for tls mqtts://example.com:8883
 	--username  	username for the broker
 	--password  	password for the broker
-	--count     	Number of messages (default=100)
 	--clients   	Number of clients (default=10)
+	--count     	Number of messages per client (default=100)
 	--qos      	Publish QoS (default=1) in submode (default=0)
 	--topic     	MQTT topic (default=/mqttjs-bench)
 	--size      	Messages size (default=1024)
