@@ -14,11 +14,11 @@ npm install mqtt-benchmark -g
 ### Usages 
 
 ```
-mqtt-bench --broker=mqtt://iot.eclipse.org:1883
+mqtt-benchmark --broker=mqtt://iot.eclipse.org:1883
 
 \\ or for TLS
 
-mqtt-bench --broker=mqtts://iot.eclipse.org:8883
+mqtt-benchmark --broker=mqtts://iot.eclipse.org:8883
 
 ```
 
