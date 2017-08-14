@@ -8,7 +8,7 @@ A simple consistant MQTT benchmarking tool  (under devolopment)
 ### Install
 
 ```
-npm install mqtt-bench -g
+npm install mqtt-benchmark -g
 ```
 
 ### Usages 
