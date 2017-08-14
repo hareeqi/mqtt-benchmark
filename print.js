@@ -25,7 +25,7 @@ const subscribe = (opt,totalAvgMsgRecived,duraion,avgConTime)=>{
 
 
 
-let helptxt = `\n\tUsage: mqtt-bench --broker=mqtts://example.com:8883 [options]\n\n\n\tOptions:\n\n`
+let helptxt = `\n\tUsage: mqtt-benchmark --broker=mqtts://example.com:8883 [options]\n\n\n\tOptions:\n\n`
 const popt = (name, des)=> (helptxt+= `\t--${(name+"      ").substring(0,10)}\t${des}\n`);
 
 
