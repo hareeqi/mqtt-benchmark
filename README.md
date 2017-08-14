@@ -1,5 +1,5 @@
 
-# mqtt-bench
+# mqtt-benchmark
 
 
 A simple consistant MQTT benchmarking tool  (under devolopment)
