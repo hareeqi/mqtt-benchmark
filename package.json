@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hareeqi/mqtt-bench.git"
+    "url": "git+https://github.com/hareeqi/mqtt-benchmark.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/hareeqi/mqtt-bench/issues"
+    "url": "https://github.com/hareeqi/mqtt-benchmark/issues"
   },
-  "homepage": "https://github.com/hareeqi/mqtt-bench#readme",
+  "homepage": "https://github.com/hareeqi/mqtt-benchmark#readme",
   "dependencies": {
     "minimist": "^1.2.0",
     "mqtt": "^2.9.2"
